@@ -2,14 +2,14 @@
 % https://en.wikipedia.org/wiki/Swarmalators
 
 %Set up
-J = 1; K = -0.75; %Active phase wave
+% J = 1; K = -0.75; %Active phase wave
 % J = 1; K = 0; %Static phase wave
-% J = 1; K = -0.1; %Splintered phase wave
-num_swarmers = 200;
+J = 1; K = -0.1; %Splintered phase wave
+num_swarmers = 100;
 %Settings for gif generation 
 num_frames = 200; %For eventual plot
 delay_time = 1/10; %in seconds
-filename = 'swarmers.gif';
+filename = 'shwarmers.gif';
 
 %Make initial conditions
 pos0 = rand(num_swarmers,2);
@@ -22,7 +22,7 @@ phase0 = stretch_to_interval(phase0,[0 1],[0 2*pi]);
 u0 = [pos0(:,1); pos0(:,2); phase0];
 
 %Solve!
-Tfin = 60;
+Tfin = 100;
 [t,u] = ode45(@(t,u)swarmalator_ode(t,u,num_swarmers,J,K), [0 Tfin], u0);
 
 %Get output ready for easy plotting
@@ -47,11 +47,17 @@ YLim = [min(min(pos(:,:,2))) max(max(pos(:,:,2)))];
 axis([XLim YLim]);
 axis off
 set(gcf,'Color',0.8*[1 1 1]);
-swarmer_ps = zeros(1,num_swarmers);
+swarmer_ims = zeros(1,num_swarmers);
+[mk,~,alpha] = imread('shawarma_color.png');
+marker_radius = 0.12;
 for j = 1:num_swarmers
-    swarmer_ps(j) = scatter(pos(1,j,1), pos(1,j,2), 60, 'ko');
-    set(swarmer_ps(j),'MarkerFaceColor',hsv2rgb([phase(1,j) 1 1]));
-    set(swarmer_ps(j),'MarkerFaceAlpha',0.5);
+    % Add shawarma icon from flaticon.com. This is the attribution they
+    % wanted:
+    % <a href="https://www.flaticon.com/free-icons/shawarma" 
+    % title="shawarma icons">Shawarma icons created by Freepik - Flaticon</a>
+    swarmer_ims(j) = imagesc(pos(1,j,1)+[-1 1]*marker_radius, ...
+                             pos(1,j,2)+[-1 1]*marker_radius, ...
+                             mk,'AlphaData',alpha);
 end
 drawnow
 frame = getframe(gcf);
@@ -60,9 +66,8 @@ im = frame2im(frame);
 imwrite(A,map,filename,'gif','LoopCount',Inf,'DelayTime',delay_time);
 for i = 1:num_frames
     for j = 1:num_swarmers
-        set(swarmer_ps(j),'XData',pos(i,j,1));
-        set(swarmer_ps(j),'YData',pos(i,j,2));
-        set(swarmer_ps(j),'MarkerFaceColor',hsv2rgb([phase(i,j) 1 1]));
+        set(swarmer_ims(j),'XData',pos(i,j,1)+[-1 1]*marker_radius);
+        set(swarmer_ims(j),'YData',pos(i,j,2)+[-1 1]*marker_radius);
     end
     drawnow
     frame = getframe(gcf);
